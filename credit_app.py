@@ -73,27 +73,42 @@ def generate_summary(all_text):
     if len(risks) == 0:
         risks.append("No obvious risks detected (manual review required)")
 
-    summary = f"""
-CREDIT REQUEST SUMMARY
+    def generate_summary(all_text):
+    text_lower = all_text.lower()
+    risks = []
 
-Customer Type: {customer_type}
-Request Type: {request_type}
-Scope: {scope}
+    if "decline" in text_lower or "decrease" in text_lower:
+        risks.append("Potential declining performance detected")
 
---------------------------------
+    if "debt" in text_lower and "increase" in text_lower:
+        risks.append("Rising leverage indicators")
 
-KEY OBSERVATIONS:
-- Documents successfully processed
-- Initial data extraction completed
+    if "loss" in text_lower:
+        risks.append("Losses mentioned in financials")
 
-RISK INDICATORS:
-- {"\n- ".join(risks)}
+    if "concentration" in text_lower:
+        risks.append("Customer concentration risk noted")
 
---------------------------------
+    if len(risks) == 0:
+        risks.append("No obvious risks detected (manual review required)")
 
-PRELIMINARY RECOMMENDATION:
-Further financial and credit review recommended prior to final approval.
-"""
+    risk_text = "\n- ".join(risks)
+
+    summary = (
+        f"CREDIT REQUEST SUMMARY\n\n"
+        f"Customer Type: {customer_type}\n"
+        f"Request Type: {request_type}\n"
+        f"Scope: {scope}\n\n"
+        f"--------------------------------\n\n"
+        f"KEY OBSERVATIONS:\n"
+        f"- Documents processed\n"
+        f"- Initial data extracted\n\n"
+        f"RISK INDICATORS:\n"
+        f"- {risk_text}\n\n"
+        f"--------------------------------\n\n"
+        f"PRELIMINARY RECOMMENDATION:\n"
+        f"Further financial and credit review recommended before approval.\n"
+    )
 
     return summary
 
