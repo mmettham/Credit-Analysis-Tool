@@ -1,15 +1,12 @@
+
 import streamlit as st
 import pandas as pd
 from PyPDF2 import PdfReader
 import docx
 
-st.set_page_config(page_title="Credit Request Analyzer", layout="wide")
-
 st.title("Credit Request Analyzer")
 
-# -----------------------------
-# USER INPUTS
-# -----------------------------
+# Sidebar Inputs
 st.sidebar.header("Request Details")
 
 customer_type = st.sidebar.selectbox(
@@ -28,14 +25,12 @@ scope = st.sidebar.selectbox(
 )
 
 uploaded_files = st.file_uploader(
-    "Upload Supporting Documents (Excel, PDF, Word)",
-    type=["xlsx", "pdf", "docx"],
+    "Upload Supporting Documents",
+    type=["pdf", "docx", "xlsx"],
     accept_multiple_files=True
 )
 
-# -----------------------------
-# FILE READERS
-# -----------------------------
+# File Readers
 def read_pdf(file):
     reader = PdfReader(file)
     text = ""
@@ -51,102 +46,71 @@ def read_excel(file):
     df = pd.read_excel(file)
     return df
 
-# -----------------------------
-# SIMPLE ANALYSIS LOGIC
-# -----------------------------
+# Analysis Function
 def generate_summary(all_text):
-    text_lower = all_text.lower()
+
+    text = all_text.lower()
     risks = []
 
-    if "decline" in text_lower or "decrease" in text_lower:
-        risks.append("Potential declining performance detected")
+    if "decline" in text or "decrease" in text:
+        risks.append("Declining performance indicators")
 
-    if "debt" in text_lower and "increase" in text_lower:
-        risks.append("Rising leverage indicators")
+    if "debt" in text:
+        risks.append("Potential leverage concerns")
 
-    if "loss" in text_lower:
-        risks.append("Losses mentioned in financials")
+    if "loss" in text:
+        risks.append("Losses mentioned")
 
-    if "concentration" in text_lower:
-        risks.append("Customer concentration risk noted")
-
-    if len(risks) == 0:
-        risks.append("No obvious risks detected (manual review required)")
-
-    def generate_summary(all_text):
-    text_lower = all_text.lower()
-    risks = []
-
-    if "decline" in text_lower or "decrease" in text_lower:
-        risks.append("Potential declining performance detected")
-
-    if "debt" in text_lower and "increase" in text_lower:
-        risks.append("Rising leverage indicators")
-
-    if "loss" in text_lower:
-        risks.append("Losses mentioned in financials")
-
-    if "concentration" in text_lower:
-        risks.append("Customer concentration risk noted")
+    if "concentration" in text:
+        risks.append("Customer concentration risk")
 
     if len(risks) == 0:
-        risks.append("No obvious risks detected (manual review required)")
+        risks.append("No major risks detected (manual review required)")
 
-    risk_text = "\n- ".join(risks)
+    summary = "CREDIT REQUEST SUMMARY\n\n"
+    summary += "Customer Type: " + customer_type + "\n"
+    summary += "Request Type: " + request_type + "\n"
+    summary += "Scope: " + scope + "\n\n"
 
-    summary = (
-        f"CREDIT REQUEST SUMMARY\n\n"
-        f"Customer Type: {customer_type}\n"
-        f"Request Type: {request_type}\n"
-        f"Scope: {scope}\n\n"
-        f"--------------------------------\n\n"
-        f"KEY OBSERVATIONS:\n"
-        f"- Documents processed\n"
-        f"- Initial data extracted\n\n"
-        f"RISK INDICATORS:\n"
-        f"- {risk_text}\n\n"
-        f"--------------------------------\n\n"
-        f"PRELIMINARY RECOMMENDATION:\n"
-        f"Further financial and credit review recommended before approval.\n"
-    )
+    summary += "KEY RISKS:\n"
+    for r in risks:
+        summary += "- " + r + "\n"
+
+    summary += "\nRECOMMENDATION:\n"
+    summary += "Further credit review recommended before approval."
 
     return summary
 
-# -----------------------------
-# MAIN APP LOGIC
-# -----------------------------
+
+# Main Logic
 if uploaded_files:
 
     all_text = ""
 
-    st.subheader("File Review & Extracted Content")
+    st.subheader("Document Review")
 
     for file in uploaded_files:
 
-        st.markdown(f"### {file.name}")
+        st.write("Processing:", file.name)
 
         if file.name.endswith(".pdf"):
             text = read_pdf(file)
-            st.text_area("PDF Extract", text[:1000], height=200)
+            st.text_area("PDF Content", text[:800])
             all_text += text
 
         elif file.name.endswith(".docx"):
             text = read_docx(file)
-            st.text_area("Word Extract", text[:1000], height=200)
+            st.text_area("Word Content", text[:800])
             all_text += text
 
         elif file.name.endswith(".xlsx"):
             df = read_excel(file)
-            st.write("Excel Preview:")
             st.dataframe(df.head())
             all_text += df.to_string()
 
-    st.subheader("Credit Risk Summary")
-
     if st.button("Generate Analysis"):
-        summary = generate_summary(all_text)
-        st.text_area("Analysis Output", summary, height=300)
+        result = generate_summary(all_text)
+        st.text_area("Credit Summary", result, height=300)
 
 else:
     st.info("Upload files to begin analysis.")
-``
