@@ -95,12 +95,12 @@ if uploaded_files:
 
         if file.name.endswith(".pdf"):
             text = read_pdf(file)
-            st.text_area("PDF Content", text[:800])
+            st.text_area(f"PDF Content - {file.name}", text[:800])
             all_text += text
 
         elif file.name.endswith(".docx"):
             text = read_docx(file)
-            st.text_area("Word Content", text[:800])
+            st.text_area(f"Word Content - {file.name}", text[:800])
             all_text += text
 
         elif file.name.endswith(".xlsx"):
